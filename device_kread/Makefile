@@ -1,4 +1,4 @@
-MYKPM_VERSION := 1.0.0
+MYKPM_VERSION := 7.0.2
 
 ifndef KP_DIR
     KP_DIR = ../KernelPatch
@@ -33,18 +33,33 @@ INCLUDE_FLAGS := $(foreach dir,$(INCLUDE_DIRS),-I$(KP_DIR)/kernel/$(dir))
 
 objs := device_kread.c
 
-all: base
+all: base network
+debug: base_debug network_debug
 
 base: device_kread_$(MYKPM_VERSION).kpm
 
-debug: CFLAGS += -DCONFIG_DEBUG
-debug: MYKPM_VER := _d
-debug: device_kread_$(MYKPM_VERSION)_debug.kpm
+network: CFLAGS += -DCONFIG_NETWORK
+network: MYKPM_VER := _n
+network: device_kread_$(MYKPM_VERSION)_network.kpm
+
+base_debug: CFLAGS += -DCONFIG_DEBUG
+base_debug: MYKPM_VER := _d
+base_debug: device_kread_$(MYKPM_VERSION)_debug.kpm
+
+network_debug: CFLAGS += -DCONFIG_NETWORK -DCONFIG_DEBUG
+network_debug: MYKPM_VER := _nd
+network_debug: device_kread_$(MYKPM_VERSION)_network_debug.kpm
 
 device_kread_$(MYKPM_VERSION).kpm: ${objs}
 	${CC} $(CFLAGS) $(CFLAG) $(INCLUDE_FLAGS) $^ -r -o $@
 
+device_kread_$(MYKPM_VERSION)_network.kpm: ${objs}
+	${CC} $(CFLAGS) $(CFLAG) $(INCLUDE_FLAGS) $^ -r -o $@
+
 device_kread_$(MYKPM_VERSION)_debug.kpm: ${objs}
+	${CC} $(CFLAGS) $(CFLAG) $(INCLUDE_FLAGS) $^ -r -o $@
+
+device_kread_$(MYKPM_VERSION)_network_debug.kpm: ${objs}
 	${CC} $(CFLAGS) $(CFLAG) $(INCLUDE_FLAGS) $^ -r -o $@
 
 .PHONY: clean
